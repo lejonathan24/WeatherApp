@@ -14,6 +14,7 @@
 
     public class WeatherResponse
     {
+        public Location? Location { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public double Generationtime_ms { get; set; }

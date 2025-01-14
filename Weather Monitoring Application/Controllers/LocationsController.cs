@@ -15,10 +15,11 @@ namespace Weather_Monitoring_Application.Controllers
     public class LocationsController : Controller
     {
         private readonly Weather_Monitoring_ApplicationContext _context;
-
-        public LocationsController(Weather_Monitoring_ApplicationContext context)
+        private readonly IHttpClientFactory _httpClientFactory;
+        public LocationsController(Weather_Monitoring_ApplicationContext context, IHttpClientFactory httpClientFactory)
         {
             _context = context;
+            _httpClientFactory = httpClientFactory;
         }
 
         // GET: Locations
@@ -26,8 +27,10 @@ namespace Weather_Monitoring_Application.Controllers
         {
             return View(await _context.Location.ToListAsync());
         }
-
+        
+        
         // GET: Locations/Details/5
+
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -37,33 +40,85 @@ namespace Weather_Monitoring_Application.Controllers
 
             var location = await _context.Location
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (location == null)
             {
                 return NotFound();
             }
+            var debug = true;
+            double latitude = -9999;
+            double longitude = -9999;
+            HttpClient client = _httpClientFactory.CreateClient();
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true }; // Set options for JSON serializer
 
-            //1. Calculate long and lat based on zip code
+            if (!debug)
+            {
+                // Use IHttpClientFactory or reuse HttpClient
 
-            //2. Create api request
-            var baseAddress = "https://api.open-meteo.com";
-            var weatherUrlRequestString = "/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m";
+                // 1. Calculate lat and long based on zip code
+                var google_api_key = Environment.GetEnvironmentVariable("google_api_key");
+                var googleBaseAddress = "https://maps.googleapis.com";
+                var googleRequestString = $"/maps/api/geocode/json?address={location.Zipcode}&key={google_api_key}";
 
-            //3. Send request
-            HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri(baseAddress);
-            var request = await client.GetAsync(weatherUrlRequestString);
+                // Create a new HttpRequestMessage for Google API request
+                var googleRequest = new HttpRequestMessage(HttpMethod.Get, googleBaseAddress + googleRequestString);
 
-            string result = await request.Content.ReadAsStringAsync();
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var weatherData = JsonSerializer.Deserialize<WeatherResponse>(result, options);
-            Console.WriteLine($"Latitude: {weatherData.Latitude}");
-            Console.WriteLine($"Longitude: {weatherData.Longitude}");
-            Console.WriteLine("Hourly temperatures:");
-            //var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            //var weatherData = JsonSerializer.Deserialize<dynamic>(result, options);
+                var googlerequest = await client.SendAsync(googleRequest);
+                string googleresult = await googlerequest.Content.ReadAsStringAsync(); // Get the JSON response as a string
+
+                
+                var geocodeResponse = JsonSerializer.Deserialize<GeocodeResponse>(googleresult, options);
+                Console.WriteLine(geocodeResponse);
 
 
-            return View(location);
+                if (geocodeResponse != null)
+                {
+                    //var results = geocodeResponse.Results[0];
+                    // Access the first result
+                    LocationCoords geocodeCoords = geocodeResponse.Results[0].Geometry.Location;
+
+                    latitude = geocodeCoords.Lat;
+                    longitude = geocodeCoords.Lng;
+
+                    // Use latitude and longitude as needed
+                    Console.WriteLine($"Latitude: {latitude}, Longitude: {longitude}");
+                }
+                else
+                {
+                    Console.WriteLine("No results found or error in the response.");
+                }
+                //Console.WriteLine(googleresult);
+
+                // 2. Create API request for weather
+
+                latitude = Math.Round(latitude, 6);
+                longitude = Math.Round(longitude, 6);
+            }
+            else
+            {
+                Console.WriteLine("Debug Mode - Using default coords");
+                longitude = Math.Round(-95.26, 6);
+                latitude = Math.Round(29.69, 6);
+            }
+            
+
+            var weatherBaseAddress = "https://api.open-meteo.com";
+            var weatherUrlRequestString = $"/v1/forecast?latitude={latitude}&longitude={longitude}&hourly=temperature_2m";
+
+            // Create a new HttpRequestMessage for weather request
+            var weatherRequest = new HttpRequestMessage(HttpMethod.Get, weatherBaseAddress + weatherUrlRequestString);
+
+            // Send the weather request
+            var weatherResponse = await client.SendAsync(weatherRequest);
+            string result = await weatherResponse.Content.ReadAsStringAsync(); // Get the JSON response as a string
+
+            
+            var weatherData = JsonSerializer.Deserialize<WeatherResponse>(result, options); // Deserialize the response into an object
+
+            weatherData.Location = location; // Add location to weather response
+
+            // Return the weather data in the view
+            return View(weatherData);
         }
 
         // GET: Locations/Create

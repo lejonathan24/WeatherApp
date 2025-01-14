@@ -2,5 +2,12 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
-import { fetchWeatherApi } from 'openmeteo';
-
+$(document).ready(function () {
+    var url = window.location;
+    $('.navbar-brand .nav').find('.active').removeClass('active');
+    $('.navbar-brand .nav li a').each(function () {
+        if (this.href == url) {
+            $(this).parent().addClass('active');
+        }
+    });
+});

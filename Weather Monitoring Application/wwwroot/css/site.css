@@ -1,3 +1,27 @@
+:root {
+    /** Dark theme primary colors */
+    --clr-primary-a0: #48b9fd;
+    --clr-primary-a10: #67c1fd;
+    --clr-primary-a20: #7fc8fe;
+    --clr-primary-a30: #95d0fe;
+    --clr-primary-a40: #a8d8fe;
+    --clr-primary-a50: #bbdfff;
+    /** Dark theme surface colors */
+    --clr-surface-a0: #121212;
+    --clr-surface-a10: #282828;
+    --clr-surface-a20: #3f3f3f;
+    --clr-surface-a30: #575757;
+    --clr-surface-a40: #717171;
+    --clr-surface-a50: #8b8b8b;
+    /** Dark theme tonal surface colors */
+    --clr-surface-tonal-a0: #1b2025;
+    --clr-surface-tonal-a10: #303539;
+    --clr-surface-tonal-a20: #464b4f;
+    --clr-surface-tonal-a30: #5e6266;
+    --clr-surface-tonal-a40: #777a7e;
+    --clr-surface-tonal-a50: #919396;
+}
+
 html {
   font-size: 14px;
 }
@@ -18,5 +42,85 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background-color: var(--clr-surface-tonal-a0);
+    color: white;
 }
+nav {
+    background-color: var(--clr-surface-tonal-a10) !important;
+}
+a {
+    color: var(--clr-primary-a30);
+}
+
+a:hover{
+    color:var(--clr-primary-a0) !important;
+}
+table {
+    overflow: hidden;
+    border-radius: .3em;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+table thead {
+    background-color: var(--clr-surface-tonal-a10);
+    border: none;
+    border-radius: .3em;
+}
+
+    table thead tr th {
+        border-top: 1px var(--clr-surface-a40) solid;
+        border-bottom: 1px var(--clr-surface-a40) solid !important;
+    }
+    table thead tr th:first-child {
+        border-top-left-radius: .3em;
+        border-left: 1px var(--clr-surface-a40) solid;
+    }
+table thead tr th:last-child {
+    border-top-right-radius: .3em;
+    border-right: 1px var(--clr-surface-a40) solid;
+}
+table tbody tr td {
+    color: white !important;
+    border-bottom: 1px var(--clr-surface-a40) solid;
+}
+table tbody tr td:first-child {
+    color: white !important;
+    border-left: 1px var(--clr-surface-a40) solid;
+}
+table tbody tr td:last-child {
+    color: white !important;
+    border-right: 1px var(--clr-surface-a40) solid;
+}
+table tbody tr:nth-of-type(2n+1) {
+    background-color: var(--clr-surface-tonal-a0);
+}
+table tbody tr:last-child td:first-child{
+    border-bottom-left-radius:.3em;
+}
+table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: .3em;
+}
+table tbody tr:hover td:not(:last-child) {
+    text-shadow: 1px 0px 0px white;
+}
+table tbody tr td:not(:last-child) {
+    cursor:pointer;
+}
+.btn {
+    background-color: var(--clr-primary-a30);
+    border: 1px solid var(--clr-primary-a50);
+    border-radius:8px;
+}
+.btn:hover {
+    text-shadow: 1px 0px 0px black;
+    color: black !important;
+}
+.nav-link.active {
+    text-shadow: 1px 0px 0px white;
+}
+.nav-link.active > li{
+    border-bottom:1px white solid;
+}
+
